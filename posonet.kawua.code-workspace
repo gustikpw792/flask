@@ -1,0 +1,28 @@
+{
+  "folders": [
+	{
+		"path": "C:/xampp/htdocs/posonet.kawua"
+	},
+	{
+		"path": "C:/xampp/htdocs/inspinia-master/Static_Full_Version"
+	},
+	{
+		"path": "C:/xampp/htdocs/posotv.pendolo"
+	},
+	{
+		"path": "C:/xampp/htdocs/posonet.pendolo"
+	},
+	{
+		"path": "C:/xampp/htdocs/posonet"
+	},
+	{
+		"path": "C:/xampp/htdocs/posotv.kawua"
+	},
+	{
+		"path": "../telnetlib"
+	},
+	{
+		"path": "../belajarflask"
+	}
+]
+}
