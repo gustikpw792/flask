@@ -5,7 +5,7 @@ import re
 import os
 import basic
 import routers
-import db
+# import db
 import parse_stdout as parse
 
 os.environ['FLASK_RUN_PORT'] = '5002'
@@ -52,6 +52,10 @@ def onuadd():
     description = request.form.get("description")
     ppp_profile = request.form.get("ppp_profile")
     access_mode = request.form.get("access_mode")
+    vlan_profile = request.form.get("vlan_profile")
+    cvlan = request.form.get("cvlan")
+    tcont = request.form.get("tcont")
+    gemport = request.form.get("gemport")
 
     index_onu = getNewIndexby(host, gpon_olt)
     auth = create_user_pass(name, sn)
@@ -65,11 +69,19 @@ def onuadd():
         "onu_index": str(index_onu["new_index"]),
         "gpon_onu": index_onu["registration_onu"],
         "access_mode": "pppoe",
+        "vlan_profile": vlan_profile,
+        "tcont": tcont,
+        "gemport": gemport,
+        "cvlan": cvlan,
         "username": auth["username"],
         "password": auth["password"],
     }
 
-    regis = basic.onuadd(host, post_data)
+    if onu_type == 'FIBERHOME' :
+        regis = basic.onuaddFiberhome(host, post_data)
+    else:
+        regis = basic.onuadd(host, post_data)
+
     # tunggu 8 detik pon modem melakukan lock (ditandai dgn lampu pon berhenti berkedip)
     # time.sleep(8)
     # distance = onu_distance(host, post_data["gpon_onu"])["distance"]
@@ -78,14 +90,15 @@ def onuadd():
 
     if regis.__contains__("ZXAN#"):
         # add PPP Secret Mikrotik
-        mtik = routers.add_ppp_secret(
-            post_data["username"], post_data["password"], access_mode, ppp_profile
-        )
+        # create secret disabled. php already make it
+        # mtik = routers.add_ppp_secret(
+        #     post_data["username"], post_data["password"], access_mode, ppp_profile
+        # )
 
         return jsonify(
             {
                 "message_olt": "Registering onu " + post_data["gpon_onu"] + " success!",
-                "message_mikrotik": mtik["message"],
+                "message_mikrotik": "mtik['message']",
                 "data": {
                     "name": post_data["name"],
                     "username": post_data["username"],
@@ -132,6 +145,10 @@ def reconfig_onu():
         "username": request.form.get("username"),
         "password": request.form.get("password"),
         "mode_config": request.form.get("mode_config"),
+        "vlan_profile": request.form.get("vlan_profile"),
+        "cvlan": request.form.get("cvlan"),
+        "tcont" : request.form.get("tcont"),
+        "gemport" : request.form.get("gemport")
     }
 
     regis = basic.onuadd(host, post_data)
@@ -141,6 +158,12 @@ def reconfig_onu():
             {
                 "message_olt": "Registering onu " + post_data["gpon_onu"] + " success!",
                 "status": True,
+                "data": {
+                    "name": post_data["name"],
+                    "username": post_data["username"],
+                    "password": post_data["password"],
+                    "gpon_onu": post_data["gpon_onu"],
+                },
             }
         )
     else:
@@ -182,7 +205,7 @@ def noonu():
     # for host in hosts:
     gpon_olt = str(request.form.get("gpon_olt"))
     onu_index = str(request.form.get("onu_index"))
-    username = str(request.form.get("username"))
+    # username = str(request.form.get("username"))
 
     data = {"gpon_olt": gpon_olt, "onu_index": onu_index}
 
@@ -190,27 +213,27 @@ def noonu():
 
     if delete.__contains__("[Successful]"):
         # delete PPP Secret Mikrotik
-        mtik = routers.del_ppp_secret(username)
-        if mtik['status'] == True :
-            return jsonify(
-                {
-                    "message": "Deleting onu "
-                    + gpon_olt
-                    + " index "
-                    + onu_index
-                    + " success!"
-                }
-            )
-        else:
-            return jsonify(
-                {
-                    "message": "Deleting onu "
-                    + gpon_olt
-                    + " index "
-                    + onu_index
-                    + " success but error deleting username in Router."
-                }
-            )
+        # mtik = routers.del_ppp_secret(username)
+        # if mtik['status'] == True :
+        return jsonify(
+            {
+                "message": "Deleting onu "
+                + gpon_olt
+                + " index "
+                + onu_index
+                + " success!"
+            }
+        )
+        # else:
+        #     return jsonify(
+        #         {
+        #             "message": "Deleting onu "
+        #             + gpon_olt
+        #             + " index "
+        #             + onu_index
+        #             + " success but error deleting username in Router."
+        #         }
+        #     )
     else:
         return jsonify(
             {
@@ -315,6 +338,11 @@ def rawonurun():
     gpon_onu = str(request.form.get("gpon_onu"))
     return basic.show_onu_run_config(host, gpon_onu)
 
+@app.route("/v1/rawonurunconfinterface")
+def rawonurunconfinterface():
+    gpon_onu = str(request.form.get("gpon_onu"))
+    return basic.show_onu_running_config_interface(host, gpon_onu)
+
 
 @app.route("/v1/rawshowcard")
 def rawshowcard():
@@ -390,6 +418,7 @@ def onustate():
     # mengambil index kedua dari terakhir utk mendapatkan 'ONU Number: x/x'
     onu_number = telnet_table.split("\r\n")[-2]
     data = []
+    # interfaces = []
     for c in array:
         row = {
             "onu_index": c.split()[0],
@@ -401,7 +430,11 @@ def onustate():
         data.append(row)
 
     return jsonify(
-        {"data": data, "onu_number": onu_number.replace("ONU Number: ", "").strip()}
+        {
+            "data": data, 
+            "onu_number": onu_number.replace("ONU Number: ", "").strip(),
+            # "interfaces": interfaces
+        }
     )
 
 
@@ -426,11 +459,18 @@ def uncfg():
         # ambil data mulai dari index 3 dan data sebelum index akhir
         array = telnet_output.split("\r\n")[3:-1]
         for c in array:
-            row = {
-                "interface": c.split()[0].replace("gpon-olt_", ""),
-                "model": c.split()[1],
-                "sn": c.split()[2],
-            }
+            if len(c) == 3 :
+                row = {
+                    "interface": c.split()[0].replace("gpon-olt_", ""),
+                    "model": c.split()[1],
+                    "sn": c.split()[2],
+                }
+            else:
+                row = {
+                    "interface": c.split()[0].replace("gpon-olt_", ""),
+                    "model": c.split()[1] + " " + c.split()[2],
+                    "sn": c.split()[3],
+                }
             data.append(row)
 
         found = str(len(data)) + " Unconfig found(s)"
@@ -498,7 +538,14 @@ def rawponpower():
     interface = str(request.form.get("interface"))
     raw_data = basic.show_pon_power_attenuation(host, interface)
     return raw_data.replace("ZXAN#", "\r\n")
-    # return jsonify(getrawponpower(host, interface))
+
+
+@app.route("/v1/getrawgponbaseinfo")
+def getrawgponbaseinfo():
+    interface = str(request.form.get("interface"))
+    raw_data = basic.show_gpon_onu_baseinfo(host, interface)
+    return raw_data
+    return jsonify(raw_data)
 
 
 @app.route("/v1/getonu_distance")
@@ -656,7 +703,61 @@ def getcard(host):
     data = basic.show_card(host)
     return parse.to_list(data, "INSERVICE")
 
+@app.route("/v1/wpa", methods=["POST"])
+def wpa():
+    gpon_onu = request.form.get("gpon_onu")
+    ssid = request.form.get("ssid")
+    wpa_key = request.form.get("wpa_key")
+    mode = request.form.get("mode")
 
+    data = {
+        "gpon_onu": gpon_onu,
+        "ssid": ssid,
+        "wpa_key": wpa_key,
+    }
+
+    if mode == 'both' or mode == 'ssid' or mode == 'wpa_key':
+        send = basic.change_wpa(host, data, mode)
+        
+        if send.__contains__("ZXAN#"):
+            if mode == 'wpa_key':
+                msg = "Success change WPA Key"
+            if mode == 'ssid':
+                msg = "Success change SSID"
+            if mode == 'both':
+                msg = "Success change SSID and WPA Key"
+
+            return jsonify({
+                "message": msg,
+                "status": 200,
+            })
+        else:
+            return jsonify({
+                "message": "Some error while change WPA",
+                "status": 500,
+            })
+    else:
+        return jsonify({
+                "message": "No change be made",
+                "status": 404,
+            })
+    
+@app.route("/v1/getTcont", methods=["GET"])
+def getTcont():
+    data = basic.show_gpon_profile_tcont(host)
+    # profiles = re.findall(r'Profile name :([^\s+\r\n]+)', data)
+    # Mencari semua Profile name
+    profile_names = re.findall(r'Profile name :(\S+)', data)
+
+    # Mencari semua Type (angka di kolom pertama setelah header)
+    types = re.findall(r'Type\s+FBW\(kbps\).*?\r\n\s*(\d+)', data, re.DOTALL)
+
+    # Menggabungkan hasil
+    result = [{"profile_name": name, "type": type_} 
+            for name, type_ in zip(profile_names, types)]
+
+    
+    return jsonify(result)
 
 
 def getponpower(host, interface):
@@ -796,57 +897,7 @@ def getNewIndexby(host, interface):
                     }
 
 
-# @app.route("/v1/getnewindexs")
-# def getNewIndex(host, interface):
-#     # for host in hosts:
-#     data = basic.show_gpon_state_by_interface(host, interface)
 
-#     # step 1: indeks yang ada didalam tabel
-#     dataX = """
-#         OnuIndex   Admin State  OMCC State  Phase State  Channel    
-#         --------------------------------------------------------------
-#         1/1/3:1     enable       enable      working      1(GPON)
-#         1/1/3:2     enable       enable      working      1(GPON)
-#         1/1/3:3     enable       enable      working      1(GPON)
-#         1/1/3:5     enable       enable      working      1(GPON)
-#         1/1/3:7     enable       disable     DyingGasp    1(GPON)
-#         1/1/3:8     enable       enable      working      1(GPON)
-#         1/1/3:9     enable       enable      working      1(GPON)
-#         1/1/3:10    enable       disable     OffLine      1(GPON)
-#         ONU Number: 6/8
-#         """
-#     if data.__contains__("No related information to show."):
-#         return {"new_index": 1, "registration_onu": interface + ":1"}
-#     else:
-#         # mengambil nomor indeks dari setiap baris pada kolom OnuIndex
-#         indeks = [int(row.split()[0].split(":")[-1]) for row in data.split("\n")[3:-2]]
-
-#         # output: indeks = [1, 2, 3, 5, 7, 8, 9, 10]
-#         # print(indeks[-1]) untuk mengambil indeks terakhir
-
-#         # step 2: mencari indeks yang terlewati
-#         missing = []
-
-#         for i in range(1, len(indeks) + 1):
-#             if i not in indeks:
-#                 missing.append(i)
-
-#         # jika tdk ada indeks yang terlewati, ambil indeks terakhir + 1
-#         newinterface = interface.replace("gpon-olt_", "")
-#         indeksbaru = 0
-#         if len(missing) == 0:
-#             indeksbaru = indeks[-1] + 1
-#             return {
-#                 "new_index": indeksbaru,
-#                 "registration_onu": newinterface + ":" + str(indeksbaru),
-#             }
-#         else:
-#             # mencetak hasil. [0] adalah mengambil indeks pertama
-#             # return '1/1/1:x'
-#             return {
-#                 "new_index": missing[0],
-#                 "registration_onu": newinterface + ":" + str(missing[0]),
-#             }
 
 
 if __name__ == "__main__":

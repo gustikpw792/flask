@@ -1,5 +1,4 @@
 Flask==2.1.2
 Werkzeug==2.2.2
 load_dotenv
-mariadb
 routeros_api

@@ -1,0 +1,13 @@
+[olt]
+OLT_HOST=192.168.50.1
+OLT_USER=zte
+OLT_PASS=zte
+OLT_PORT=2345
+
+[mikrotik]
+ROUTER_HOST=192.168.50.1
+ROUTER_PORT=8728
+
+[telegram]
+token=5657520282:AAEM8VglypDXYgx6FN5wkijmgl7zVfbpbnM
+chatid=
