@@ -459,13 +459,14 @@ def uncfg():
         # ambil data mulai dari index 3 dan data sebelum index akhir
         array = telnet_output.split("\r\n")[3:-1]
         for c in array:
-            if len(c) == 3 :
+            if len(c.split()) == 3 :
                 row = {
                     "interface": c.split()[0].replace("gpon-olt_", ""),
                     "model": c.split()[1],
                     "sn": c.split()[2],
                 }
             else:
+                # jika model ont memiliki 2 kata. Eg. XPON GGC665
                 row = {
                     "interface": c.split()[0].replace("gpon-olt_", ""),
                     "model": c.split()[1] + " " + c.split()[2],

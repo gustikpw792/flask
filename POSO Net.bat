@@ -1,7 +1,7 @@
 @echo off
 
 REM Menentukan path ke direktori venv dan skrip activate
-set "venv_dir=D:\program files\python\flask\venv"
+set "venv_dir=C:\xampp\htdocs\flask\venv"
 set "activate_script=%venv_dir%\Scripts\activate"
 
 REM Memeriksa apakah skrip activate ada
