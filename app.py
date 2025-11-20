@@ -442,7 +442,7 @@ def onustate():
 def uncfg():
     # for host in hosts:
     telnet_output = basic.show_pon_onu_uncfg(host)
-    telnet_outputx = """
+    telnet_outputx = """                                            --> index 0
         OltIndex            Model                    SN                     
         -------------------------------------------------------------------------
         gpon-olt_1/1/3      F609V5.3                 ZTEGC86587D8   --> index 3
@@ -458,21 +458,45 @@ def uncfg():
         data = []
         # ambil data mulai dari index 3 dan data sebelum index akhir
         array = telnet_output.split("\r\n")[3:-1]
-        for c in array:
-            if len(c.split()) == 3 :
-                row = {
-                    "interface": c.split()[0].replace("gpon-olt_", ""),
-                    "model": c.split()[1],
-                    "sn": c.split()[2],
-                }
-            else:
-                # jika model ont memiliki 2 kata. Eg. XPON GGC665
-                row = {
-                    "interface": c.split()[0].replace("gpon-olt_", ""),
-                    "model": c.split()[1] + " " + c.split()[2],
-                    "sn": c.split()[3],
-                }
-            data.append(row)
+        # beberapa olt berbeda versi, ada yg memiliki kolom header 3 dan 4
+        header = telnet_output.split("\r\n")[1].split()
+        if len(header) == 3 :
+            for c in array:
+                if len(c.split()) == 3 :
+                    row = {
+                        "interface": c.split()[0].replace("gpon-olt_", ""),
+                        "model": c.split()[1],
+                        "sn": c.split()[2],
+                        "header": len(header),
+                    }
+                else:
+                    # jika model ont memiliki 2 kata. Eg. XPON GGC665
+                    row = {
+                        "interface": c.split()[0].replace("gpon-olt_", ""),
+                        "model": c.split()[1] + " " + c.split()[2],
+                        "sn": c.split()[3],
+                        "header": len(header),
+                    }
+                data.append(row)
+
+        elif len(header) == 4 :
+            for c in array:
+                if len(c.split()) == 4 :
+                    row = {
+                        "interface": c.split()[0].replace("gpon-olt_", ""),
+                        "model": c.split()[1],
+                        "sn": c.split()[2],
+                        "header": len(header),
+                    }
+                else:
+                    # jika model ont memiliki 2 kata. Eg. XPON GGC665
+                    row = {
+                        "interface": c.split()[0].replace("gpon-olt_", ""),
+                        "model": c.split()[1] + " " + c.split()[2],
+                        "sn": c.split()[4],
+                        "header": len(header),
+                    }
+                data.append(row)
 
         found = str(len(data)) + " Unconfig found(s)"
 
