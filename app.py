@@ -488,6 +488,13 @@ def uncfg():
                         "sn": c.split()[2],
                         "header": len(header),
                     }
+                elif len(c.split()) == 3 :
+                    row = {
+                        "interface": c.split()[0].replace("gpon-olt_", ""),
+                        "model": c.split()[1],
+                        "sn": c.split()[2],
+                        "header": len(header),
+                    }
                 else:
                     # jika model ont memiliki 2 kata. Eg. XPON GGC665
                     row = {
