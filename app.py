@@ -302,6 +302,37 @@ def remoteonu():
                 }
             )
 
+@app.route('/v1/close_all_remoteweb', methods=['POST'])
+def closeRemoteWeb():
+    # Menerima data JSON
+    if request.is_json:
+        resources = request.get_json()
+        no = 0
+
+        for index, item in enumerate(resources, start=1):
+            try:
+                data = {"gpon_onu": item.get('gpon_onu', ''), "state": "disabled"}
+                remote = basic.remote_onu(host, data)
+                
+                if remote.__contains__("ZXAN#"):
+                    no += 1
+
+            except Exception as e:
+                return jsonify({
+                    'status': False,
+                    'message': str(e)
+                }), 500
+            
+        return jsonify({
+            'status': True,
+            'message': 'Total ' + str(no) + ' remote web management disabled!'
+        }), 200
+    
+    else:
+        return jsonify({
+            'status': False,
+            'message': 'Request data is not JSON'
+        }), 200
 
 @app.route("/v1/getnewindex")
 def getnewindex():
@@ -489,6 +520,7 @@ def uncfg():
                         "header": len(header),
                     }
                 elif len(c.split()) == 3 :
+                    # di olt c300 terdapat 4 kolom header, namun row pada kolom PW terkadang kosong
                     row = {
                         "interface": c.split()[0].replace("gpon-olt_", ""),
                         "model": c.split()[1],
