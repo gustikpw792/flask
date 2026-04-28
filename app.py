@@ -520,15 +520,16 @@ def uncfg():
                         "interface": c.split()[0].replace("gpon-olt_", ""),
                         "model": c.split()[1] + " " + c.split()[2],
                         "sn": c.split()[3],
-                        "header": len(header) + len(c.split()),
+                        "header": len(header),
+                        "row": len(c.split()),
                     }
                 elif len(c.split()) == 4 :
                     row = {
                         "interface": c.split()[0].replace("gpon-olt_", ""),
                         "model": c.split()[1],
                         "sn": c.split()[2],
-                        "header": len(header) + len(c.split()),
-                        # "header": len(header),
+                        "header": len(header),
+                        "row": len(c.split()),
                     }
                 elif len(c.split()) == 3 :
                     # di olt c300 terdapat 4 kolom header, namun row pada kolom PW terkadang kosong
@@ -536,8 +537,8 @@ def uncfg():
                         "interface": c.split()[0].replace("gpon-olt_", ""),
                         "model": c.split()[1],
                         "sn": c.split()[2],
-                        "header": len(header) + len(c.split()),
-                        # "header": len(header),
+                        "header": len(header),
+                        "row": len(c.split()),
                     }
                 # else:
                 #     # jika model ont memiliki 2 kata. Eg. XPON GGC665
