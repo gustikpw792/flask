@@ -1,7 +1,6 @@
 from telnetlib import Telnet
 from dotenv import load_dotenv
 import time
-import re
 import os
 
 # host = '10.10.10.2'
@@ -318,7 +317,7 @@ def show_onu_type(host):
 
     tn.read_until(b'#')
     tn.write(b'show onu-type gpon\n')
-    time.sleep(0.2)
+    time.sleep(0.5)
 
     return tn.read_very_eager().decode('utf-8')
 

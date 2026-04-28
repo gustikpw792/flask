@@ -151,10 +151,7 @@ def reconfig_onu():
         "gemport" : request.form.get("gemport")
     }
 
-    if request.form.get("onu_type") == 'FIBERHOME' :
-        regis = basic.onuaddFiberhome(host, post_data)
-    else:
-        regis = basic.onuadd(host, post_data)
+    regis = basic.onuadd(host, post_data)
 
     if regis.__contains__("#"):
         return jsonify(
