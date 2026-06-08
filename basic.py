@@ -96,8 +96,12 @@ def show_gpon_onu_profile_vlan(host):
 def show_gpon_profile_tcont(host):
     tn = session(host)
 
-    tn.write(b'show gpon profile tcont\n')
+    tn.write(b"terminal length 0\n")
     time.sleep(0.2)
+    tn.read_until(b'#')
+
+    tn.write(b'show gpon profile tcont\n')
+    time.sleep(0.5)
 
     return tn.read_until(b'#').decode('utf-8')
 

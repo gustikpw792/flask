@@ -494,6 +494,7 @@ def uncfg():
         array = telnet_output.split("\r\n")[3:-1]
         # beberapa olt berbeda versi, ada yg memiliki kolom header 3 dan 4
         header = telnet_output.split("\r\n")[1].split()
+
         if len(header) == 3 :
             for c in array:
                 if len(c.split()) == 3 :
