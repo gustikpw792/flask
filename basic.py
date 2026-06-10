@@ -411,8 +411,8 @@ def onuaddFiberhome(host, data):
     interface gpon-onu_{}
     name {}
     description {}
-    tcont 1 profile default
-    gemport 1 tcont 1
+    {}
+    {}
     service-port 1 vport 1 user-vlan {} vlan {}
     exit
 
@@ -431,6 +431,8 @@ def onuaddFiberhome(host, data):
         data['gpon_onu'], 
         data['name'], 
         data['description'],
+        data['tcont'],
+        data['gemport'],
         data['cvlan'],
         data['cvlan'], 
         data['gpon_onu'],
